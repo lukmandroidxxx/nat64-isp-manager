@@ -1,0 +1,16 @@
+# NAT64 ISP Manager - sudoers policy.
+#
+# Install as /etc/sudoers.d/nat64-manager with mode 0440 root:root and validate:
+#   visudo -cf /etc/sudoers.d/nat64-manager
+#
+# The backend runs as nat64mgr and may execute exactly one command as root:
+# the root-owned typed helper, with no arguments. The helper reads a JSON
+# operation request from stdin. No shell, wildcard or user-supplied command
+# vector is permitted.
+
+Defaults:nat64mgr !requiretty
+Defaults:nat64mgr secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+Cmnd_Alias NAT64_HOSTCTL = /usr/bin/python3 /opt/nat64-manager/hostctl.py
+
+nat64mgr ALL=(root) NOPASSWD: NAT64_HOSTCTL

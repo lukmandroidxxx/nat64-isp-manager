@@ -1,0 +1,20 @@
+[Unit]
+Description=NAT64 ISP Manager database migrations
+Documentation=file:///opt/nat64-manager/docs/02-INSTALLATION.md
+After=network-online.target postgresql.service
+Wants=network-online.target
+# postgresql.service is only ordered when it exists locally. A remote database
+# is supported; the service reports the connection error and can be re-run.
+# The unit is intentionally oneshot. Re-run it after every application upgrade:
+#   systemctl start nat64-manager-migrate.service
+
+[Service]
+Type=oneshot
+User=nat64mgr
+Group=nat64mgr
+WorkingDirectory=/opt/nat64-manager/backend
+EnvironmentFile=/etc/nat64-manager/nat64-manager.env
+Environment=PATH=/opt/nat64-manager/venv/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/opt/nat64-manager/venv/bin/alembic upgrade head
+TimeoutStartSec=300
+UMask=0027

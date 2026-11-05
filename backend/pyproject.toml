@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nat64-isp-manager"
+version = "1.0.0"
+description = "Control plane for a Jool-based multi-public-IPv4 NAT64 gateway"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115.6",
+  "uvicorn[standard]>=0.34.0",
+  "sqlalchemy>=2.0.36",
+  "alembic>=1.14.0",
+  "psycopg[binary]>=3.2.3",
+  "pydantic>=2.10.4",
+  "pydantic-settings>=2.7.1",
+  "PyJWT>=2.10.1",
+  "pwdlib[argon2]>=0.2.1",
+  "python-multipart>=0.0.20",
+  "psutil>=6.1.1",
+  "redis>=5.2.1",
+  "cryptography>=44.0.0",
+  "email-validator>=2.2.0",
+  "httpx>=0.28.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+  "integration: requires Linux root, Jool, BIND9, nftables and network namespaces",
+]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+# B008: FastAPI's dependency injection is expressed through Depends() defaults.
+# BLE001/S110: API and host boundaries deliberately convert all failures into a
+#              typed response so no traceback or partial state leaks to clients.
+# PLW1510: the helper inspects return codes itself and must not raise blindly.
+ignore = ["B008", "BLE001", "S110", "PLW1510"]

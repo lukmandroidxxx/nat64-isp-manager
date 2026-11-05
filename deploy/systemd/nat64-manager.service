@@ -1,0 +1,41 @@
+[Unit]
+Description=NAT64 ISP Manager control plane
+Documentation=file:///opt/nat64-manager/docs/02-INSTALLATION.md
+After=network-online.target postgresql.service nat64-manager-migrate.service
+Wants=network-online.target
+# Migrations are a prerequisite but can be re-run after upgrades.
+Requires=nat64-manager-migrate.service
+# Run exactly one worker. The collector executes inside this process and must
+# not be duplicated. Scale by moving the collector to its own service, not by
+# adding uvicorn workers.
+
+[Service]
+Type=simple
+User=nat64mgr
+Group=nat64mgr
+SupplementaryGroups=
+WorkingDirectory=/opt/nat64-manager/backend
+EnvironmentFile=/etc/nat64-manager/nat64-manager.env
+Environment=PATH=/opt/nat64-manager/venv/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/opt/nat64-manager/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1 --proxy-headers --forwarded-allow-ips=127.0.0.1
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=30
+KillMode=mixed
+UMask=0027
+LimitNOFILE=65536
+
+# Hardening. Do NOT add NoNewPrivileges or an empty CapabilityBoundingSet:
+# both prevent the unprivileged service from using sudo to reach the root
+# helper. ProtectSystem=strict and ProtectKernelTunables would also block the
+# helper from writing /etc/netplan, /etc/nftables.d, /proc/sys and /run.
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=true
+ProtectControlGroups=true
+RestrictRealtime=true
+LockPersonality=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+
+[Install]
+WantedBy=multi-user.target

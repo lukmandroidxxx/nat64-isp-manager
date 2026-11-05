@@ -1,0 +1,35 @@
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+backend/.env
+backend/data/
+*.db
+*.sqlite3
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+build/
+# frontend/dist is intentionally committed so the native installer can run
+# without Node.js. Rebuild it with `npm run build` before committing frontend
+# changes.
+
+# Frontend
+frontend/node_modules/
+frontend/*.tsbuildinfo
+
+# Generated / scratch
+frontend/openapi.json
+frontend/dump.cjs
+frontend/probe.cjs
+frontend/schemas.cjs
+tests/results/
+*.log
+.DS_Store

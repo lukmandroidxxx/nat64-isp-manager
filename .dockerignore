@@ -1,0 +1,32 @@
+# Docker build context for the application-only image.
+# Keep local virtualenvs, node_modules and generated data out of the build so
+# the frontend stage uses the dependencies it installs inside the image.
+
+.git
+.gitignore
+.dockerignore
+.env
+.env.*
+!.env.example
+
+.venv/
+venv/
+**/__pycache__/
+**/*.py[cod]
+**/.pytest_cache/
+**/.ruff_cache/
+**/.mypy_cache/
+**/*.egg-info/
+
+backend/data/
+*.db
+*.sqlite3
+
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+
+tests/results/
+scripts/results/
+*.log
+.DS_Store

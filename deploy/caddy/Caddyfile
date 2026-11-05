@@ -1,0 +1,57 @@
+# NAT64 ISP Manager - Caddy v2 alternative to nginx.
+#
+# Usage:
+#   caddy validate --config deploy/caddy/Caddyfile
+#   install -m 0644 deploy/caddy/Caddyfile /etc/caddy/Caddyfile
+#   systemctl reload caddy
+#
+# Replace nat64.example.net and the ACME email. Caddy obtains and renews TLS
+# certificates automatically. The backend serves both the SPA and /api/v1 from
+# the same origin. This file targets a native install; use api:8000 instead of
+# 127.0.0.1:8000 if Caddy runs in the Docker Compose network.
+
+{
+    email admin@example.net
+    # Uncomment for a private ACME server or staging while testing:
+    # acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+nat64.example.net {
+    encode zstd gzip
+
+    # Uploaded backups and API JSON are small; refuse oversized bodies.
+    request_body {
+        max_size 16MB
+    }
+
+    header {
+        -Server
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+    }
+
+    reverse_proxy 127.0.0.1:8000 {
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+        header_up X-Forwarded-Host {host}
+        transport http {
+            read_timeout 300s
+            write_timeout 300s
+        }
+    }
+
+    log {
+        output file /var/log/caddy/nat64-manager-access.log {
+            roll_size 20mb
+            roll_keep 10
+        }
+        format json
+    }
+}
+
+# Plain HTTP listener for an internal network or local testing. Remove it when
+# Caddy terminates TLS for a public hostname.
+:8080 {
+    encode zstd gzip
+    reverse_proxy 127.0.0.1:8000
+}
